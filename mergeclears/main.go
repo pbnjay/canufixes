@@ -59,7 +59,7 @@ func main() {
 				if alldata[i] < data[i] { // begins
 					alldata[i] = data[i]
 				}
-				if data[i+nreads] > 0 && alldata[i+nreads] > data[i+nreads] { // ends
+				if data[i+nreads] > data[i] && alldata[i+nreads] > data[i+nreads] { // ends
 					alldata[i+nreads] = data[i+nreads]
 				}
 			}
