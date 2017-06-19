@@ -9,6 +9,7 @@ package main
 import (
 	"encoding/binary"
 	"flag"
+	"fmt"
 	"os"
 )
 
@@ -19,7 +20,8 @@ func main() {
 
 	var numReads uint32
 	var alldata []int32
-	for _, fn := range flag.Args() {
+	for ax, fn := range flag.Args() {
+		fmt.Printf("%d/%d %s\n", ax, flag.NArg(), fn)
 		f, err := os.Open(fn)
 		if err != nil {
 			panic(err)
@@ -35,12 +37,18 @@ func main() {
 		if numReads != nreads {
 			panic("numreads doesn't match in all files")
 		}
-		data := make([]int32, nreads)
+		data := make([]int32, nreads*2+2)
 		err = binary.Read(f, binary.LittleEndian, data)
 		if err != nil {
 			panic(err)
 		}
 		f.Close()
+
+		for i, v := range data {
+			if v == -1 {
+				data[i] = 0
+			}
+		}
 
 		if alldata == nil {
 			alldata = data
