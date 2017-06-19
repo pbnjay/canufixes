@@ -19,7 +19,7 @@ func main() {
 	flag.Parse()
 
 	var numReads uint32
-	var alldata []int32
+	var alldata []uint32
 	for ax, fn := range flag.Args() {
 		fmt.Printf("%d/%d %s\n", ax, flag.NArg(), fn)
 		f, err := os.Open(fn)
@@ -37,18 +37,12 @@ func main() {
 		if numReads != nreads {
 			panic("numreads doesn't match in all files")
 		}
-		data := make([]int32, nreads*2+2)
+		data := make([]uint32, nreads*2+2)
 		err = binary.Read(f, binary.LittleEndian, data)
 		if err != nil {
 			panic(err)
 		}
 		f.Close()
-
-		for i, v := range data {
-			if v == -1 {
-				data[i] = 0
-			}
-		}
 
 		if alldata == nil {
 			alldata = data
@@ -56,10 +50,22 @@ func main() {
 		}
 		if *bestOnly {
 			for i := uint32(0); i < nreads; i++ {
+				if alldata[i] == ^uint32(0) {
+					// deleted, don't replace it
+					continue
+				}
+
+				if data[i] == ^uint32(0) {
+					// now it's deleted
+					alldata[i] = data[i]
+					alldata[i+nreads] = data[i]
+					continue
+				}
+
 				if alldata[i] < data[i] { // begins
 					alldata[i] = data[i]
 				}
-				if data[i+nreads] > data[i] && alldata[i+nreads] > data[i+nreads] { // ends
+				if data[i+nreads] > alldata[i] && alldata[i+nreads] > data[i+nreads] { // ends
 					alldata[i+nreads] = data[i+nreads]
 				}
 			}
