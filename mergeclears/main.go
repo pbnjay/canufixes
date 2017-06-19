@@ -18,7 +18,7 @@ func main() {
 	flag.Parse()
 
 	var numReads uint32
-	var alldata []uint32
+	var alldata []int32
 	for _, fn := range flag.Args() {
 		f, err := os.Open(fn)
 		if err != nil {
@@ -35,7 +35,7 @@ func main() {
 		if numReads != nreads {
 			panic("numreads doesn't match in all files")
 		}
-		data := make([]uint32, nreads)
+		data := make([]int32, nreads)
 		err = binary.Read(f, binary.LittleEndian, data)
 		if err != nil {
 			panic(err)
@@ -51,7 +51,7 @@ func main() {
 				if alldata[i] < data[i] { // begins
 					alldata[i] = data[i]
 				}
-				if data[i+nreads] != 0 && alldata[i+nreads] > data[i+nreads] { // ends
+				if data[i+nreads] > 0 && alldata[i+nreads] > data[i+nreads] { // ends
 					alldata[i+nreads] = data[i+nreads]
 				}
 			}
