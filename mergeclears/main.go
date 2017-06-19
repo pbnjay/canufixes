@@ -14,7 +14,6 @@ import (
 )
 
 func main() {
-	bestOnly := flag.Bool("b", true, "take best from all files (max begin, min end)")
 	outname := flag.String("o", "merged.clear", "output clear file")
 	flag.Parse()
 
@@ -48,35 +47,26 @@ func main() {
 			alldata = data
 			continue
 		}
-		if *bestOnly {
-			for i := uint32(0); i < nreads; i++ {
-				if alldata[i] == ^uint32(0) {
-					// deleted, don't replace it
-					continue
-				}
 
-				if data[i] == ^uint32(0) {
-					// now it's deleted
-					alldata[i] = data[i]
-					alldata[i+nreads] = data[i]
-					continue
-				}
-
-				if alldata[i] < data[i] { // begins
-					alldata[i] = data[i]
-				}
-				if data[i+nreads] > alldata[i] && alldata[i+nreads] > data[i+nreads] { // ends
-					alldata[i+nreads] = data[i+nreads]
-				}
+		for i := uint32(0); i <= nreads; i++ {
+			if alldata[i] == ^uint32(0) {
+				// deleted, don't replace it
+				continue
 			}
-		} else {
-			for i := uint32(0); i < nreads; i++ {
-				if alldata[i] == 0 { // begins
-					alldata[i] = data[i]
-				}
-				if alldata[i+nreads] == 0 { // ends
-					alldata[i+nreads] = data[i+nreads]
-				}
+
+			if data[i+nreads+1] == ^uint32(0) || data[i] == ^uint32(0) {
+				// now it's deleted
+				alldata[i] = ^uint32(0)
+				alldata[i+nreads+1] = ^uint32(0)
+				continue
+			}
+
+			// is current begin pt before new begin point?
+			// is current end pt after new end point?
+			if alldata[i] < data[i] || alldata[i+nreads+1] > data[i+nreads+1] {
+				// replace both
+				alldata[i] = data[i]
+				alldata[i+nreads+1] = data[i+nreads+1]
 			}
 		}
 	}
